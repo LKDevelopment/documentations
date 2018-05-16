@@ -3,7 +3,7 @@ on Ubuntu 18.04
 
 ### Installation
 ```
-wget https://repo.zabbix.com/zabbix/3.5/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.5-1%2Bbionic_all.deb`
+wget https://repo.zabbix.com/zabbix/3.5/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.5-1%2Bbionic_all.deb
 sudo dpkg -i zabbix-release_3.5-1+bionic_all.deb
 sudo apt install zabbix-agent
 # Generate random PSK 
