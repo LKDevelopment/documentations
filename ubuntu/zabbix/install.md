@@ -34,6 +34,11 @@ sudo systemctl enable zabbix-agent
 
 ```
 
+### Firewall
+```
+sudo ufw allow 10050/tcp  
+```
+
 Now head over to the Zabbix Webinterface.
 
 "Configuration" --> "Hosts" --> "Create Host"
