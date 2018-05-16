@@ -1,0 +1,55 @@
+---
+
+- hosts: hel-lb-1.hetzner.app
+  become: yes
+  vars:
+  - zabbix_host: monitor.hetzner.app
+  - zabbix_psk_file: /etc/zabbix/zabbix_agentd.psk
+  tasks:
+   - name: download zabbix repo
+     shell: wget https://repo.zabbix.com/zabbix/3.5/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.5-1%2Bbionic_all.deb
+   - name: init zabbix repo
+     become: yes
+     shell: dpkg -i zabbix-release_3.5-1+bionic_all.deb
+
+   - name: update repo
+     become: yes
+     shell: apt update
+
+   - name: install zabbix agent
+     become: yes
+     shell: apt install zabbix-agent -y
+
+   - name: generate psk
+     become: yes
+     shell: sh -c "openssl rand -hex 32 > {{zabbix_psk_file}}"
+
+   - name: configure agent
+     become: yes
+     shell: sudo rm /etc/zabbix/zabbix_agentd.conf && sudo echo -e "PidFile=/var/run/zabbix/zabbix_agentd.pid\nLogFile=/var/log/zabbix/zabbix_agentd.log\nLogFileSize=0\nServerActive=127.0.0.1\nHostname={{zabbix_host}}\nInclude=/etc/zabbix/zabbix_agentd.d/*.conf\nServer={{zabbix_host}}\nTLSConnect=psk\nTLSAccept=psk\nTLSPSKIdentity={{ansible_hostname}}\nTLSPSKFile={{zabbix_psk_file}}" >> /etc/zabbix/zabbix_agentd.conf
+
+   - name: start the agent
+     become: yes
+     shell: systemctl start zabbix-agent
+
+   - name: enable the agent
+     become: yes
+     shell: systemctl enable zabbix-agent
+
+   - name: enable ufw 1
+     become: yes
+     shell: ufw allow 10050/tcp
+
+   - name: enable ufw 1
+     become: yes
+     shell: ufw allow 10051/tcp
+   - name: restart zabbix-agent
+     become: yes
+     shell: sudo service zabbix-agent restart
+
+   - name: get Key
+     shell: cat /etc/zabbix/zabbix_agentd.psk
+     register: shell_result
+
+   - debug:
+      var: shell_result.stdout_lines
