@@ -1,0 +1,31 @@
+---
+
+- hosts: loadbalancer
+  become: yes
+  vars:
+   - floating_ip1: 178.46.242.117
+     floating_ip2: 95.216.176.36
+  tasks:
+   - name: add ip1
+     shell: sudo ip addr add {{floating_ip1}} dev eth0
+     ignore_errors: yes
+
+   - name: add ip2
+     shell: sudo ip addr add {{floating_ip2}} dev eth0
+     ignore_errors: yes
+
+   - name: add service
+     become: yes
+     shell: sudo echo -e "[Unit]\nDescription=AddFloatingIPService\n[Service]\nExecStart=/home/ansible/add_floating_ip.sh\nType=oneshot\nRemainAfterExit=no\n[Install]\nWantedBy=multi-user.target" >> /etc/systemd/system/floating_ips.service
+
+   - name: add script
+     become: yes
+     shell: sudo echo -e "#!/bin/bash\n ip addr add {{floating_ip1}} dev eth0\nip addr add {{floating_ip2}} dev eth0" >> /home/ansible/add_floating_ip.sh && sudo chmod +x /home/ansible/add_floating_ip.sh
+
+   - name: reload deamon
+     become: yes
+     shell: sudo systemctl daemon-reload
+
+   - name: enable service
+     become: yes
+     shell: sudo systemctl enable floating_ips.service
